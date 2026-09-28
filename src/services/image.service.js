@@ -61,54 +61,42 @@ class ImageService {
    */
   async processVariants(buffer) {
     // 1. Process WebP variant (max width 1200px, quality 80)
-    const webpPipeline = sharp(buffer)
+    const { data: webpBuffer, info: webpInfo } = await sharp(buffer)
       .resize({ width: 1200, withoutEnlargement: true })
-      .webp({ quality: 80 });
-
-    const [webpBuffer, webpInfo] = await Promise.all([
-      webpPipeline.toBuffer(),
-      webpPipeline.metadata()
-    ]);
+      .webp({ quality: 80 })
+      .toBuffer({ resolveWithObject: true });
 
     // 2. Process AVIF variant (max width 1200px, reasonable quality: 65)
-    const avifPipeline = sharp(buffer)
+    const { data: avifBuffer, info: avifInfo } = await sharp(buffer)
       .resize({ width: 1200, withoutEnlargement: true })
-      .avif({ quality: 65 });
-
-    const [avifBuffer, avifInfo] = await Promise.all([
-      avifPipeline.toBuffer(),
-      avifPipeline.metadata()
-    ]);
+      .avif({ quality: 65 })
+      .toBuffer({ resolveWithObject: true });
 
     // 3. Process Thumbnail variant (300x300, fit: cover, format: webp)
-    const thumbPipeline = sharp(buffer)
+    const { data: thumbBuffer, info: thumbInfo } = await sharp(buffer)
       .resize(300, 300, { fit: 'cover' })
-      .webp({ quality: 80 });
-
-    const [thumbBuffer, thumbInfo] = await Promise.all([
-      thumbPipeline.toBuffer(),
-      thumbPipeline.metadata()
-    ]);
+      .webp({ quality: 80 })
+      .toBuffer({ resolveWithObject: true });
 
     return {
       webp: {
         buffer: webpBuffer,
-        width: webpInfo.width || 1200,
+        width: webpInfo.width,
         height: webpInfo.height,
         format: 'webp',
         contentType: 'image/webp'
       },
       avif: {
         buffer: avifBuffer,
-        width: avifInfo.width || 1200,
+        width: avifInfo.width,
         height: avifInfo.height,
         format: 'avif',
         contentType: 'image/avif'
       },
       thumbnail: {
         buffer: thumbBuffer,
-        width: thumbInfo.width || 300,
-        height: thumbInfo.height || 300,
+        width: thumbInfo.width,
+        height: thumbInfo.height,
         format: 'webp',
         contentType: 'image/webp'
       }
@@ -197,8 +185,9 @@ class ImageService {
         break;
     }
 
-    const outputBuffer = await pipeline.toBuffer();
-    const finalMetadata = await sharp(outputBuffer).metadata();
+    const { data: outputBuffer, info: finalInfo } = await pipeline.toBuffer({
+      resolveWithObject: true
+    });
 
     const mimeMap = {
       webp: 'image/webp',
@@ -210,8 +199,8 @@ class ImageService {
 
     return {
       buffer: outputBuffer,
-      width: finalMetadata.width,
-      height: finalMetadata.height,
+      width: finalInfo.width,
+      height: finalInfo.height,
       format: targetFormat === 'jpg' ? 'jpeg' : targetFormat,
       contentType: mimeMap[targetFormat] || 'application/octet-stream',
       size: outputBuffer.length
