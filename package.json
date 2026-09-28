@@ -1,0 +1,37 @@
+{
+  "name": "assetforge",
+  "version": "2.0.0",
+  "description": "AssetForge - Image storage and processing platform backend",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node test/run-tests.js"
+  },
+  "keywords": [
+    "image-processing",
+    "s3",
+    "sharp",
+    "assetforge",
+    "express",
+    "mongodb"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1141.0",
+    "@aws-sdk/s3-request-presigner": "^3.1141.0",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.4",
+    "express": "^5.2.1",
+    "mongoose": "^9.10.2",
+    "morgan": "^1.12.1",
+    "multer": "^2.4.0",
+    "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.3.0",
+    "s3rver": "^3.7.1",
+    "supertest": "^7.3.0"
+  }
+}
