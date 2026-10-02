@@ -1,6 +1,6 @@
-# AssetForge V2
+# AssetForge
 
-A lightweight, high-performance image storage and processing backend built with **Node.js**, **Express**, **Sharp**, **MongoDB (Mongoose)**, and **AWS S3**.
+AssetForge is a full-stack image asset platform built with **Node.js**, **Express**, **React**, **Sharp**, **MongoDB (Mongoose)**, and **AWS S3**. It provides project-scoped asset management for a dashboard and an API-key protected external API.
 
 ---
 
@@ -40,12 +40,31 @@ Return Asset Details & Image URLs
 * **Configuration:** dotenv
 * **Containerization:** Docker & Docker Compose
 
+## Engineering Notes
+
+### Project isolation
+
+Project resources are queried with the authenticated user ID. API keys resolve to one project, and external asset queries remain scoped to that project.
+
+### Storage lifecycle
+
+S3 stores image bytes while MongoDB stores metadata and object keys. Originals, generated variants, and on-demand transforms are tracked together so deletion removes all associated objects. Uploads roll back S3 objects when metadata persistence fails.
+
+### Authentication and API access
+
+Dashboard requests use JWT authentication. External requests use one-way hashed API keys, per-key rate limiting, and request logging. Raw API keys are returned only when they are created.
+
+### Image processing
+
+Uploads are held in memory, validated with Sharp, and converted into WebP, AVIF, and thumbnail variants before metadata is stored. Dynamic transforms are generated on demand and recorded for cleanup.
+
 ---
 
 ## Project Structure
 
 ```text
 .
+├── frontend/                     # React dashboard
 ├── src/
 │   ├── server.js                  # Express application setup & error handling
 │   │
@@ -68,8 +87,9 @@ Return Asset Details & Image URLs
 │
 ├── uploads/                       # Working directory for local uploads
 ├── test/
-│   └── run-tests.js               # 17-step end-to-end integration test suite
-├── .env                           # Local environment configuration
+│   ├── run-tests.js               # Asset lifecycle integration suite
+│   └── platform-features.test.js  # Platform integration suite
+├── .env                           # Local environment configuration (ignored)
 ├── .env.example                   # Environment variable template
 ├── .gitignore
 ├── package.json
@@ -98,6 +118,7 @@ Configure your `.env` variables:
 
 ```env
 PORT=5000
+CORS_ORIGIN=http://localhost:5173
 MONGODB_URI=mongodb://localhost:27017/assetforge
 
 AWS_REGION=ap-south-1
@@ -108,7 +129,12 @@ AWS_S3_BUCKET=your-bucket-name
 # Optional (for MinIO, LocalStack, or custom S3-compatible endpoints):
 # AWS_ENDPOINT=http://localhost:9000
 # AWS_S3_FORCE_PATH_STYLE=true
+
+JWT_SECRET=replace_with_a_random_secret_at_least_32_characters
+JWT_EXPIRES_IN=7d
 ```
+
+`JWT_SECRET` must be a random value with at least 32 characters. Use a comma-separated `CORS_ORIGIN` value when the dashboard is hosted separately from the API.
 
 ### 3. Installation
 

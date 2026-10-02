@@ -5,21 +5,28 @@ const morgan = require('morgan');
 const multer = require('multer');
 const connectDB = require('./config/db');
 const assetRoutes = require('./routes/asset.routes');
+const authRoutes = require('./routes/auth.routes');
+const projectRoutes = require('./routes/project.routes');
+const v1Routes = require('./routes/v1.routes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const path = require('path');
+const fs = require('fs');
+const frontendDist = path.join(__dirname, '../frontend/dist');
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
-// Middleware
-app.use(cors());
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// HTTP Request Logger (skip in test environment)
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('dev'));
 }
 
-// Health Check Endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({
     success: true,
@@ -32,6 +39,10 @@ app.get('/health', (req, res) => {
 });
 
 app.get('/', (req, res) => {
+  if (fs.existsSync(frontendDist)) {
+    return res.sendFile(path.join(frontendDist, 'index.html'));
+  }
+
   res.status(200).json({
     success: true,
     data: {
@@ -42,8 +53,18 @@ app.get('/', (req, res) => {
   });
 });
 
-// Mount Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/v1', v1Routes);
 app.use('/api/assets', assetRoutes);
+
+// Serve static frontend build if present
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+  app.get(/^(?!\/api|\/health).*$/, (req, res) => {
+    res.sendFile(path.join(frontendDist, 'index.html'));
+  });
+}
 
 // 404 Handler for undefined routes
 app.use((req, res) => {
@@ -98,7 +119,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start Server when run directly
 if (require.main === module) {
   connectDB().then(() => {
     app.listen(PORT, () => {

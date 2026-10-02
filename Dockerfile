@@ -1,3 +1,13 @@
+FROM node:22-bookworm-slim AS frontend-build
+
+WORKDIR /usr/src/app/frontend
+
+COPY frontend/package*.json ./
+RUN npm ci
+
+COPY frontend/ ./
+RUN npm run build
+
 FROM node:22-bookworm-slim
 
 # Create app directory
@@ -7,8 +17,10 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm ci --omit=dev
 
-# Bundle app source
-COPY . .
+# Bundle backend source and the built frontend
+COPY src ./src
+COPY --from=frontend-build /usr/src/app/frontend/dist ./frontend/dist
+COPY uploads/.gitkeep ./uploads/.gitkeep
 
 # Ensure uploads directory exists
 RUN mkdir -p uploads

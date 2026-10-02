@@ -24,6 +24,12 @@ const variantSchema = new mongoose.Schema(
 
 const assetSchema = new mongoose.Schema(
   {
+    projectId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Project',
+      default: null,
+      index: true
+    },
     originalName: {
       type: String,
       required: true,
@@ -66,6 +72,10 @@ const assetSchema = new mongoose.Schema(
         type: variantSchema,
         required: true
       }
+    },
+    transformed: {
+      type: [variantSchema],
+      default: []
     },
     folder: {
       type: String,

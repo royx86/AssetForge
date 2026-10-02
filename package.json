@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "test": "node test/run-tests.js"
+    "test": "node test/run-tests.js",
+    "test:features": "node test/platform-features.test.js",
+    "test:all": "node test/run-tests.js && node test/platform-features.test.js"
   },
   "keywords": [
     "image-processing",
@@ -21,9 +23,11 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1141.0",
     "@aws-sdk/s3-request-presigner": "^3.1141.0",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^18.0.4",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.10.2",
     "morgan": "^1.12.1",
     "multer": "^2.4.0",

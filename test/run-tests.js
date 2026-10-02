@@ -1,5 +1,5 @@
 /**
- * AssetForge V2 Comprehensive Verification Suite
+ * AssetForge integration test suite
  * Tests all 17 required sequence steps against real MongoDB & S3 operations.
  */
 
@@ -22,7 +22,7 @@ const bold = (text) => `\x1b[1m${text}\x1b[0m`;
 
 async function runAllTests() {
   console.log(bold('\n========================================================'));
-  console.log(bold('       AssetForge V2 - 17 Step Integration Test Suite    '));
+  console.log(bold('       AssetForge - Asset Lifecycle Integration Suite    '));
   console.log(bold('========================================================\n'));
 
   let mongod;
@@ -270,6 +270,10 @@ async function runAllTests() {
     if (transformedData.width !== 800 || transformedData.height !== 600 || transformedData.format !== 'webp') {
       throw new Error(`Transformation response mismatch: ${JSON.stringify(transformedData)}`);
     }
+    const transformedAsset = await Asset.findById(assetId);
+    if (!transformedAsset?.transformed.some((variant) => variant.key === transformedData.key)) {
+      throw new Error('Transformed S3 key was not persisted with the asset');
+    }
     console.log(green(`✓ [Step 11] Transformation succeeded: ${transformedData.width}x${transformedData.height} ${transformedData.format}`));
 
     // -------------------------------------------------------------------------
@@ -356,6 +360,17 @@ async function runAllTests() {
 
     if (webpStillExists) {
       throw new Error(`WebP S3 file was not deleted: ${uploadedAsset.webp.key}`);
+    }
+    let transformedStillExists = false;
+    try {
+      await s3TestClient.send(new GetObjectCommand({ Bucket: testBucket, Key: transformedData.key }));
+      transformedStillExists = true;
+    } catch (err) {
+      // Expected
+    }
+
+    if (transformedStillExists) {
+      throw new Error(`Transformed S3 file was not deleted: ${transformedData.key}`);
     }
     console.log(green(`✓ [Step 16] Verified all S3 files (original, webp, avif, thumbnail) were deleted`));
 
@@ -447,6 +462,7 @@ async function runAllTests() {
     if (s3TempDir && fs.existsSync(s3TempDir)) {
       fs.rmSync(s3TempDir, { recursive: true, force: true });
     }
+    process.exit(process.exitCode || 0);
   }
 }
 
