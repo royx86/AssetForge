@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" fill="none">
+  <!-- Top Face - AWS Signature Orange -->
+  <path d="M18 3L32 10.5L18 18L4 10.5L18 3Z" fill="#EC7211"/>
+  <!-- Left Face - Deep Slate -->
+  <path d="M4 10.5L18 18V33L4 25.5V10.5Z" fill="#1E293B"/>
+  <!-- Right Face - Steel Slate -->
+  <path d="M18 18L32 10.5V25.5L18 33V18Z" fill="#334155"/>
+  <!-- Inner Precision Aperture -->
+  <path d="M18 9L25 12.75L18 16.5L11 12.75L18 9Z" fill="#FFFFFF" fill-opacity="0.9"/>
+  <path d="M18 19.5V28.5L27 23.5V14.5L18 19.5Z" fill="#FFFFFF" fill-opacity="0.2"/>
+  <path d="M18 19.5L9 14.5V23.5L18 28.5V19.5Z" fill="#FFFFFF" fill-opacity="0.4"/>
+  <circle cx="18" cy="12.75" r="2" fill="#EC7211"/>
+</svg>
